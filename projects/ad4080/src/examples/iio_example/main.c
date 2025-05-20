@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <peripherals.h>
+#include <common_data.h>
 
 int main(void)
 {

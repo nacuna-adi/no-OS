@@ -1,4 +1,3 @@
-#include <peripherals.h> 
 #include <maxim_uart.h>
 
 static struct max_uart_init_param uart_extra_ip = {

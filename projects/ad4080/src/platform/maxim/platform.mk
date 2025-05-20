@@ -1,5 +1,7 @@
 
-SRCS += $(AD4080_SRC_DIR)/platform/$(PLATFORM)/uart.c
+# pull in the parametes for maxim platform
+SRCS += $(AD4080_SRC_DIR)/platform/$(PLATFORM)/parameters.c
+INCS += $(AD4080_SRC_DIR)/platform/$(PLATFORM)/parameters.h
 
 # pull in platform drivers
 AD4080_PLATFORM_SRCS-$(PLATFORM_UART_STDIO) += $(PLATFORM_DRIVERS)/maxim_uart_stdio.c

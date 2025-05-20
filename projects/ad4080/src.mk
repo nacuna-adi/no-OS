@@ -2,9 +2,7 @@ AD4080_SRC_DIR:=$(PROJECT)/src
 
 include $(AD4080_SRC_DIR)/examples/$(TARGET_EXAMPLE)/example.mk
 include $(AD4080_SRC_DIR)/platform/$(PLATFORM)/platform.mk
-
-# pull in our platform agnostic peripheral descriptors
-INCS += $(AD4080_SRC_DIR)/common/peripherals.h
+include $(AD4080_SRC_DIR)/common/common.mk
 
 # pull in no-OS facilities we will need... depending on the example
 AD4080_SRCS-$(NOOS_UART) += $(DRIVERS)/api/no_os_uart.c
