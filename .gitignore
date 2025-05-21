@@ -35,3 +35,14 @@ aducm_build
 
 local_variables.mk
 *generated*
+
+#ignore vim swap files
+*.swp
+
+#ignore eclipse project files
+.cproject
+.project
+.settings
+
+#ignore exuberant ctags
+tags
