@@ -1,7 +1,7 @@
-PLATFORM?=maxim
-TARGET?=max32665
+PLATFORM ?= maxim
+TARGET ?= max32665
 
-TARGET_EXAMPLE=iio_example
+NO_OS_USB_UART = y
 
 include ../../tools/scripts/generic_variables.mk
 
