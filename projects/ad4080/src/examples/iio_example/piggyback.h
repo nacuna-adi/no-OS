@@ -1,5 +1,5 @@
 /***************************************************************************//**
- *   @file   ad4080/src/examples/iio_example/iio_example.c
+ *   @file   ad4080/src/examples/iio_example/piggyback.h
  *   @brief  Parameters Definitions.
  *   @author Niel Acuna (niel.acuna@analog.com)
  *           Marc Paolo Sosa (marcpaolo.sosa@analog.com)
@@ -31,38 +31,73 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
-#include <stdio.h>
+#ifndef __PIGGYBACK_H__
+#define __PIGGYBACK_H__
+#include <stddef.h>
 
-#include <common_data.h>
-#include <ad4080.h>
+#include <no_os_gpio.h>
+#include <no_os_uart.h>
+#include <no_os_spi.h>
+
 #include <iio_ad4080.h>
 #include <iio_app.h>
-#include <piggyback.h>
 
-/* provide the piggyback with hardware definitions it needs to function 
- * properly
- */
-static struct controller_board_class demo_board_class = {
-	.gp1_class = &gpio1_class,
-	.gp2_class = &gpio2_class,
-	.gp3_class = &gpio3_class,
-	.cfg_spi_class = &spi_class,
-	.serial_log_class = &serial_log_class,
+struct controller_board_class
+{
+	struct no_os_gpio_init_param *gp3_class;
+	struct no_os_gpio_init_param *gp2_class;
+	struct no_os_gpio_init_param *gp1_class;
+	struct no_os_spi_init_param *cfg_spi_class;
+	struct no_os_uart_init_param *serial_log_class;
 };
 
-int run_iio_example(void)
-{
-	struct ad4080_piggyback *piggyback;
-	int err;
+struct controller_board_desc {
+	struct no_os_gpio_desc *gp3;
+	struct no_os_gpio_desc *gp2;
+	struct no_os_gpio_desc *gp1;
+	struct no_os_spi_desc *cfg_spi;
+	struct no_os_uart_desc *serial_log;
+};
 
-	piggyback = probe_piggyback(&demo_board_class);
-	if (!piggyback) {
-		fprintf(stderr, "No expansion board found!\r\n");
-		return -ENODEV;
-	}
-	err = start_piggyback(piggyback);
-	stop_piggyback(piggyback);
-	remove_piggyback(piggyback);
-	return err;
-}
+/* this is our ad4080_piggyback base class */
+struct ad4080_piggyback {
+	char *name;
 
+#define PIGGYBACK_PROBED 		(1 << 0)
+#define PIGGYBACK_PREINITIALIZED 	(1 << 1)
+#define PIGGYBACK_INITIALIZED 		(1 << 2)
+#define PIGGYBACK_IIO_INITIALIZED 	(1 << 3)
+	uint32_t flags;
+
+	/* ad4080 communications require the following hardware definitions
+	 * make sure they are given by the system */
+	struct controller_board_class *board_class;
+	struct controller_board_desc board_desc;
+
+	struct ad4080_iio_device *iio_dev;
+	struct ad4080_init_param *ad4080_init_param;
+
+	struct iio_app_desc *iio_app;
+	
+	int (*probe)(struct ad4080_piggyback *piggyback);
+	int (*remove)(struct ad4080_piggyback *piggyback);
+
+	int (*init)(struct ad4080_piggyback *piggyback);
+	int (*exit)(struct ad4080_piggyback *piggyback);
+};
+
+#define piggyback_container(ptr, type, member) ({ \
+	(type *)((char *)(ptr) - offsetof(type, member)); \
+})
+
+int piggyback_init(struct ad4080_piggyback *piggyback);
+
+struct ad4080_piggyback *
+	probe_piggyback(struct controller_board_class *board_class);
+void remove_piggyback(struct ad4080_piggyback *piggyback);
+
+int start_piggyback(struct ad4080_piggyback *piggyback);
+void stop_piggyback(struct ad4080_piggyback *piggyback);
+
+
+#endif /* __PIGGYBACK_H__ */

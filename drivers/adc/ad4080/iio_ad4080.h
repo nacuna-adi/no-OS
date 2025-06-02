@@ -1,10 +1,9 @@
 /***************************************************************************//**
- *   @file   ad4080/src/common/common_data.h
- *   @brief  Parameters Definitions.
- *   @author Niel Acuna (niel.acuna@analog.com)
- *           Marc Paolo Sosa (marcpaolo.sosa@analog.com)
+ *   @file   ad4080.h
+ *   @brief  Header file of AD4080 IIO Driver.
+ *   @author Niel Anthony Acuna (niel.acuna@analog.com)
 ********************************************************************************
- * Copyright 2021(c) Analog Devices, Inc.
+ * Copyright 2023(c) Analog Devices, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,19 +30,21 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
-#ifndef __COMMON_DATA_H__
-#define __COMMON_DATA_H__
+#ifndef __AD4080_IIO_H__
+#define __AD4080_IIO_H__
 
-#include "parameters.h"
+#include "iio.h"
+#include "iio_types.h"
+#include "ad4080.h"
 
-extern struct no_os_uart_init_param uart_ip;
-extern struct no_os_uart_init_param serial_log_class;
-extern struct no_os_spi_init_param spi_class;
-extern struct no_os_gpio_init_param reset_line_class;
+struct ad4080_iio_device {
+	struct ad4080_dev *ad4080;
+	struct iio_device *iio_dev;
+};
 
-extern struct no_os_gpio_init_param gpio1_class;
-extern struct no_os_gpio_init_param gpio2_class;
-extern struct no_os_gpio_init_param gpio3_class;
+int ad4080_iio_init(struct ad4080_iio_device **iio_dev,
+		    struct ad4080_init_param *init_param);
+int ad4080_iio_remove(struct ad4080_iio_device *iio_dev);
 
-#endif /* __COMMON_DATA_H__ */
+#endif /* __AD4080_H__ */
 

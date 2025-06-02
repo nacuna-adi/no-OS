@@ -1,5 +1,5 @@
 /***************************************************************************//**
- *   @file   ad4080/src/common/common_data.c
+ *   @file   ad4080/src/examples/iio_example/ardz.c
  *   @brief  Parameters Definitions.
  *   @author Niel Acuna (niel.acuna@analog.com)
  *           Marc Paolo Sosa (marcpaolo.sosa@analog.com)
@@ -31,71 +31,58 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
+#include <no_os_delay.h>
 #include <common_data.h>
+#include <ardz.h>
 
-struct no_os_uart_init_param serial_log_class = {
-	.device_id = SERIAL_LOG_DEVICE_ID,
-	.asynchronous_rx = SERIAL_LOG_ASYNC_RX,
-	.baud_rate = SERIAL_LOG_BAUD_RATE,
-	.size = SERIAL_LOG_CS,
-	.parity = SERIAL_LOG_PARITY,
-	.stop = SERIAL_LOG_STOP_BIT,
-	.extra = SERIAL_LOG_EXTRA,
-	.platform_ops = SERIAL_LOG_OPS,
-};
+static int ardz_probe(struct ad4080_piggyback *piggyback)
+{
+	struct ardz_piggyback *ardz;
 
-struct no_os_uart_init_param uart_ip = {
-	.device_id = UART_DEVICE_ID,
-	.asynchronous_rx = UART_ASYNC_RX,
-	.irq_id = UART_IRQ_ID,
-	.baud_rate = UART_BAUD_RATE,
-	.size = UART_CS,
-	.parity = UART_PARITY,
-	.stop = UART_STOP_BIT,
-	.extra = UART_EXTRA,
-	.platform_ops = UART_OPS,
-};
+	ardz = piggyback_container(piggyback, struct ardz_piggyback, gen_piggyback);
 
-struct no_os_spi_init_param spi_class = {
-	.device_id = SPI_DEVICE_ID,
-	.max_speed_hz = SPI_SPEED_HZ,
-	.chip_select = SPI_CHIP_SELECT,
-	.mode = SPI_MODE,
-	.bit_order = SPI_BIT_ORDER,
-	.lanes = SPI_LANES,
-	.extra = SPI_EXTRA,
-	.platform_ops = SPI_OPS, 
-};
+	/* reset the ardz board. this is for debugging purposes for the 
+	 * time being */
+	no_os_gpio_get(&ardz->reset_line, ardz->reset_line_class);
+	no_os_gpio_direction_output(ardz->reset_line, NO_OS_GPIO_LOW);
+	no_os_gpio_set_value(ardz->reset_line, NO_OS_GPIO_LOW);
+	no_os_mdelay(100);
+	no_os_gpio_set_value(ardz->reset_line, NO_OS_GPIO_HIGH);
 
-struct no_os_gpio_init_param reset_line_class = {
-	.port = RESET_LINE_PORT,
-	.number = RESET_LINE_NUM,
-	.pull = RESET_LINE_PULL,
-	.platform_ops = RESET_LINE_OPS,
-	.extra = RESET_LINE_EXTRA,
-};
+	/* interface with the ACE discovery sequence here 
+	 * (if such a library exists). for now, its always assumed
+	 * that we are connected to an ardz board so return success. */
 
-struct no_os_gpio_init_param gpio1_class = {
-	.port = GPIO1_PORT,
-	.number = GPIO1_NUM,
-	.pull = GPIO1_PULL,
-	.platform_ops = GPIO1_OPS,
-	.extra = GPIO1_EXTRA,
-};
+	return piggyback_init(piggyback);
+}
 
-struct no_os_gpio_init_param gpio2_class = {
-	.port = GPIO2_PORT,
-	.number = GPIO2_NUM,
-	.pull = GPIO2_PULL,
-	.platform_ops = GPIO2_OPS,
-	.extra = GPIO2_EXTRA,
-};
+static int ardz_init(struct ad4080_piggyback *piggyback)
+{
+	return 0;
+}
 
-struct no_os_gpio_init_param gpio3_class = {
-	.port = GPIO3_PORT,
-	.number = GPIO3_NUM,
-	.pull = GPIO3_PULL,
-	.platform_ops = GPIO3_OPS,
-	.extra = GPIO3_EXTRA,
+static int ardz_exit(struct ad4080_piggyback *piggyback)
+{
+	return 0;
+}
+
+static int ardz_remove(struct ad4080_piggyback *piggyback)
+{
+	struct ardz_piggyback *ardz;
+	ardz = piggyback_container(piggyback, struct ardz_piggyback, gen_piggyback);
+	no_os_gpio_remove(ardz->reset_line);
+	return 0;
+}
+
+struct ardz_piggyback ardz_piggyback = {
+	.gen_piggyback = {
+		.name = "EVAL-AD4080ARDZ",
+		.probe = ardz_probe,
+		.remove = ardz_remove,
+		.init = ardz_init,
+		.exit = ardz_exit,
+	},
+
+	.reset_line_class = &reset_line_class,
 };
 

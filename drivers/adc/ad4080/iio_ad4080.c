@@ -1,10 +1,9 @@
 /***************************************************************************//**
- *   @file   ad4080/src/common/common_data.h
- *   @brief  Parameters Definitions.
- *   @author Niel Acuna (niel.acuna@analog.com)
- *           Marc Paolo Sosa (marcpaolo.sosa@analog.com)
+ *   @file   ad4080.c
+ *   @brief  Implementation of AD4080 IIO Driver.
+ *   @author Niel Anthony Acuna (niel.acuna@analog.com)
 ********************************************************************************
- * Copyright 2021(c) Analog Devices, Inc.
+ * Copyright 2023(c) Analog Devices, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,19 +30,45 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
-#ifndef __COMMON_DATA_H__
-#define __COMMON_DATA_H__
+#include <errno.h>
+#include "iio_ad4080.h"
 
-#include "parameters.h"
+#include "no_os_alloc.h"
 
-extern struct no_os_uart_init_param uart_ip;
-extern struct no_os_uart_init_param serial_log_class;
-extern struct no_os_spi_init_param spi_class;
-extern struct no_os_gpio_init_param reset_line_class;
 
-extern struct no_os_gpio_init_param gpio1_class;
-extern struct no_os_gpio_init_param gpio2_class;
-extern struct no_os_gpio_init_param gpio3_class;
+int ad4080_iio_init(struct ad4080_iio_device **iio_dev,
+		    struct ad4080_init_param *init_param)
+{
+	struct ad4080_iio_device *ad4080_iiodev;
+	int ret;
 
-#endif /* __COMMON_DATA_H__ */
+	/* allocate our instance */
+	ad4080_iiodev = no_os_calloc(1, sizeof *ad4080_iiodev);
+	if (!ad4080_iiodev)
+		return -ENOMEM;
+
+	/* fill in the device instance */
+	ret = ad4080_init(&ad4080_iiodev->ad4080, *init_param);
+	if (ret)
+		goto error_setup;
+
+	/* fill in the IIO device descriptor */
+	ad4080_iiodev->iio_dev = NULL;
+
+	*iio_dev = ad4080_iiodev;
+	return 0;
+
+error_setup:
+	no_os_free(ad4080_iiodev);
+	return ret;
+}
+
+int ad4080_iio_remove(struct ad4080_iio_device *iiodev)
+{
+	int ret;
+	if ((ret = ad4080_remove(iiodev->ad4080)) == 0) {
+		no_os_free(iiodev);
+	}
+	return ret;
+}
 
