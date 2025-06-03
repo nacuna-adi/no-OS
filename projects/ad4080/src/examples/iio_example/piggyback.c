@@ -33,6 +33,8 @@
 *******************************************************************************/
 #include <stdio.h>
 
+#include <no_os_alloc.h>
+
 #include <piggyback.h>
 #include <ardz.h>
 
@@ -93,7 +95,8 @@ int piggyback_init(struct ad4080_piggyback *piggyback)
 	no_os_gpio_get(&piggyback->board_desc.gp3,
 			piggyback->board_class->gp3_class);
 	no_os_gpio_direction_input(piggyback->board_desc.gp3);
-	
+
+
 	piggyback->flags |= PIGGYBACK_PREINITIALIZED;
 	
 	return 0;
@@ -138,6 +141,8 @@ int start_piggyback(struct ad4080_piggyback *piggyback)
 	}
 
 	/* now prepare iio stuff */
+	struct iio_app_init_param app_init_param = {0};
+
 	if (piggyback->ad4080_init_param == NULL)
 		piggyback->ad4080_init_param = &default_ad4080_init_param;
 	piggyback->ad4080_init_param->spi_init = piggyback->board_class->cfg_spi_class;
@@ -148,11 +153,37 @@ int start_piggyback(struct ad4080_piggyback *piggyback)
 	}
 	piggyback->flags |= PIGGYBACK_IIO_INITIALIZED;
 
-	return 0;
+	/* initialize the adc data buffer */
+	piggyback->adc_data_buffer.size = 65536;
+	piggyback->adc_data_buffer.buff = no_os_malloc(piggyback->adc_data_buffer.size);
+	if(piggyback->adc_data_buffer.buff == NULL) {
+		return -ENOMEM;
+	}
+	struct iio_app_device iio_app_devices[] = {
+		IIO_APP_DEVICE("NACUNA_ad4080_demo", piggyback->iio_dev->ad4080,
+				piggyback->iio_dev->iio_dev, 
+				&piggyback->adc_data_buffer, 
+				NULL, NULL),
+	};
+	app_init_param.devices = iio_app_devices;	
+	app_init_param.nb_devices = 1;
+	app_init_param.uart_init_params = *piggyback->board_class->serial_iio_class;
+	ret = iio_app_init(&piggyback->iio_app, app_init_param);
+	if (ret)
+		return ret;
+
+	piggyback->flags |= PIGGYBACK_IIO_APP_INITIALIZED;
+	return iio_app_run(piggyback->iio_app);
 }
 
 void stop_piggyback(struct ad4080_piggyback *piggyback)
 {
+	if ((piggyback->flags & PIGGYBACK_IIO_APP_INITIALIZED) == PIGGYBACK_IIO_APP_INITIALIZED) {
+		iio_app_remove(piggyback->iio_app);
+		no_os_free(piggyback->adc_data_buffer.buff);
+		piggyback->flags &= ~(PIGGYBACK_IIO_INITIALIZED);
+	}
+
 	if ((piggyback->flags & PIGGYBACK_IIO_INITIALIZED) == PIGGYBACK_IIO_INITIALIZED) {
 		ad4080_iio_remove(piggyback->iio_dev);
 		piggyback->flags &= ~(PIGGYBACK_IIO_INITIALIZED);

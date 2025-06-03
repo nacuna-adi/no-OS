@@ -42,8 +42,8 @@
 #include <iio_ad4080.h>
 #include <iio_app.h>
 
-struct controller_board_class
-{
+struct controller_board_class {
+	struct no_os_uart_init_param *serial_iio_class;
 	struct no_os_gpio_init_param *gp3_class;
 	struct no_os_gpio_init_param *gp2_class;
 	struct no_os_gpio_init_param *gp1_class;
@@ -52,6 +52,7 @@ struct controller_board_class
 };
 
 struct controller_board_desc {
+	//struct no_os_uart_desc *serial_iio; // stored in iio_app_desc
 	struct no_os_gpio_desc *gp3;
 	struct no_os_gpio_desc *gp2;
 	struct no_os_gpio_desc *gp1;
@@ -67,6 +68,7 @@ struct ad4080_piggyback {
 #define PIGGYBACK_PREINITIALIZED 	(1 << 1)
 #define PIGGYBACK_INITIALIZED 		(1 << 2)
 #define PIGGYBACK_IIO_INITIALIZED 	(1 << 3)
+#define PIGGYBACK_IIO_APP_INITIALIZED 	(1 << 4)
 	uint32_t flags;
 
 	/* ad4080 communications require the following hardware definitions
@@ -76,6 +78,8 @@ struct ad4080_piggyback {
 
 	struct ad4080_iio_device *iio_dev;
 	struct ad4080_init_param *ad4080_init_param;
+
+	struct iio_data_buffer adc_data_buffer;
 
 	struct iio_app_desc *iio_app;
 	

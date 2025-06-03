@@ -46,8 +46,9 @@ static int ardz_probe(struct ad4080_piggyback *piggyback)
 	no_os_gpio_get(&ardz->reset_line, ardz->reset_line_class);
 	no_os_gpio_direction_output(ardz->reset_line, NO_OS_GPIO_LOW);
 	no_os_gpio_set_value(ardz->reset_line, NO_OS_GPIO_LOW);
-	no_os_mdelay(100);
+	no_os_mdelay(500);
 	no_os_gpio_set_value(ardz->reset_line, NO_OS_GPIO_HIGH);
+	no_os_mdelay(500);
 
 	/* interface with the ACE discovery sequence here 
 	 * (if such a library exists). for now, its always assumed

@@ -44,7 +44,7 @@ struct no_os_uart_init_param serial_log_class = {
 	.platform_ops = SERIAL_LOG_OPS,
 };
 
-struct no_os_uart_init_param uart_ip = {
+struct no_os_uart_init_param serial_iio_class = {
 	.device_id = UART_DEVICE_ID,
 	.asynchronous_rx = UART_ASYNC_RX,
 	.irq_id = UART_IRQ_ID,

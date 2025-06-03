@@ -36,7 +36,7 @@
 
 #include "parameters.h"
 
-extern struct no_os_uart_init_param uart_ip;
+extern struct no_os_uart_init_param serial_iio_class;
 extern struct no_os_uart_init_param serial_log_class;
 extern struct no_os_spi_init_param spi_class;
 extern struct no_os_gpio_init_param reset_line_class;
