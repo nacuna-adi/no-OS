@@ -43,6 +43,10 @@
  * properly
  */
 static struct controller_board_class demo_board_class = {
+	.osc_40_class = &osc_40_class,
+	.osc_20_class = &osc_20_class,
+	.osc_10_class = &osc_10_class,
+
 	.serial_iio_class = &serial_iio_class,
 	.gp1_class = &gpio1_class,
 	.gp2_class = &gpio2_class,

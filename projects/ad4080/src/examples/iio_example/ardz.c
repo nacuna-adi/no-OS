@@ -54,17 +54,18 @@ static int ardz_probe(struct ad4080_piggyback *piggyback)
 	 * (if such a library exists). for now, its always assumed
 	 * that we are connected to an ardz board so return success. */
 
-	return piggyback_init(piggyback);
+	return 0;
 }
 
 static int ardz_init(struct ad4080_piggyback *piggyback)
 {
-	return 0;
+	return init_piggyback(piggyback);
 }
 
-static int ardz_exit(struct ad4080_piggyback *piggyback)
+static void ardz_exit(struct ad4080_piggyback *piggyback)
 {
-	return 0;
+	exit_piggyback(piggyback);
+	return;
 }
 
 static int ardz_remove(struct ad4080_piggyback *piggyback)

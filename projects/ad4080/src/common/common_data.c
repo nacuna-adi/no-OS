@@ -99,3 +99,27 @@ struct no_os_gpio_init_param gpio3_class = {
 	.extra = GPIO3_EXTRA,
 };
 
+struct no_os_gpio_init_param osc_40_class = {
+	.port = OSC_40M_PORT,
+	.number = OSC_40M_NUM,
+	.pull = OSC_40M_PULL,
+	.platform_ops = OSC_40M_OPS,
+	.extra = OSC_40M_EXTRA,
+};
+
+struct no_os_gpio_init_param osc_20_class = {
+	.port = OSC_20M_PORT,
+	.number = OSC_20M_NUM,
+	.pull = OSC_20M_PULL,
+	.platform_ops = OSC_20M_OPS,
+	.extra = OSC_20M_EXTRA,
+};
+
+struct no_os_gpio_init_param osc_10_class = {
+	.port = OSC_10M_PORT,
+	.number = OSC_10M_NUM,
+	.pull = OSC_10M_PULL,
+	.platform_ops = OSC_10M_OPS,
+	.extra = OSC_10M_EXTRA,
+};
+

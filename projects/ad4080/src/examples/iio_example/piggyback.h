@@ -43,6 +43,10 @@
 #include <iio_app.h>
 
 struct controller_board_class {
+	struct no_os_gpio_init_param *osc_40_class;
+	struct no_os_gpio_init_param *osc_20_class;
+	struct no_os_gpio_init_param *osc_10_class;
+
 	struct no_os_uart_init_param *serial_iio_class;
 	struct no_os_gpio_init_param *gp3_class;
 	struct no_os_gpio_init_param *gp2_class;
@@ -52,6 +56,10 @@ struct controller_board_class {
 };
 
 struct controller_board_desc {
+	struct no_os_gpio_desc *osc_40;
+	struct no_os_gpio_desc *osc_20;
+	struct no_os_gpio_desc *osc_10;
+
 	//struct no_os_uart_desc *serial_iio; // stored in iio_app_desc
 	struct no_os_gpio_desc *gp3;
 	struct no_os_gpio_desc *gp2;
@@ -65,10 +73,9 @@ struct ad4080_piggyback {
 	char *name;
 
 #define PIGGYBACK_PROBED 		(1 << 0)
-#define PIGGYBACK_PREINITIALIZED 	(1 << 1)
-#define PIGGYBACK_INITIALIZED 		(1 << 2)
-#define PIGGYBACK_IIO_INITIALIZED 	(1 << 3)
-#define PIGGYBACK_IIO_APP_INITIALIZED 	(1 << 4)
+#define PIGGYBACK_INITIALIZED 		(1 << 1)
+#define PIGGYBACK_IIO_INITIALIZED 	(1 << 2)
+#define PIGGYBACK_IIO_APP_INITIALIZED 	(1 << 3)
 	uint32_t flags;
 
 	/* ad4080 communications require the following hardware definitions
@@ -87,19 +94,18 @@ struct ad4080_piggyback {
 	int (*remove)(struct ad4080_piggyback *piggyback);
 
 	int (*init)(struct ad4080_piggyback *piggyback);
-	int (*exit)(struct ad4080_piggyback *piggyback);
+	void (*exit)(struct ad4080_piggyback *piggyback);
 };
 
 #define piggyback_container(ptr, type, member) ({ \
 	(type *)((char *)(ptr) - offsetof(type, member)); \
 })
 
-int piggyback_init(struct ad4080_piggyback *piggyback);
+int init_piggyback(struct ad4080_piggyback *piggyback);
+void exit_piggyback(struct ad4080_piggyback *piggyback);
 
-struct ad4080_piggyback *
-	probe_piggyback(struct controller_board_class *board_class);
+struct ad4080_piggyback *probe_piggyback(struct controller_board_class *board_class);
 void remove_piggyback(struct ad4080_piggyback *piggyback);
-
 int start_piggyback(struct ad4080_piggyback *piggyback);
 void stop_piggyback(struct ad4080_piggyback *piggyback);
 

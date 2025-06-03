@@ -75,8 +75,8 @@ static struct ad4080_init_param default_ad4080_init_param = {
 };
 
 /* piggyback implementers should call this to initialize the piggyback
- * system on your piggyback object */
-int piggyback_init(struct ad4080_piggyback *piggyback)
+ * system on your piggyback object - preferably on their init() function */
+int init_piggyback(struct ad4080_piggyback *piggyback)
 {
 	no_os_uart_init(&piggyback->board_desc.serial_log, 
 			piggyback->board_class->serial_log_class);
@@ -96,10 +96,36 @@ int piggyback_init(struct ad4080_piggyback *piggyback)
 			piggyback->board_class->gp3_class);
 	no_os_gpio_direction_input(piggyback->board_desc.gp3);
 
+	/* oscillators */
+	no_os_gpio_get(&piggyback->board_desc.osc_40,
+			piggyback->board_class->osc_40_class);
+	no_os_gpio_direction_output(piggyback->board_desc.osc_40,
+				    NO_OS_GPIO_LOW);
 
-	piggyback->flags |= PIGGYBACK_PREINITIALIZED;
-	
+	no_os_gpio_get(&piggyback->board_desc.osc_20,
+			piggyback->board_class->osc_20_class);
+	no_os_gpio_direction_output(piggyback->board_desc.osc_20,
+				    NO_OS_GPIO_LOW);
+
+	no_os_gpio_get(&piggyback->board_desc.osc_10,
+			piggyback->board_class->osc_10_class);
+	no_os_gpio_direction_output(piggyback->board_desc.osc_10,
+				    NO_OS_GPIO_LOW);
 	return 0;
+}
+
+/* piggyback implementers should call this to exit the piggyback
+ * system on your piggyback object - preferably on their exit() function */
+void exit_piggyback(struct ad4080_piggyback *piggyback)
+{
+	no_os_gpio_remove(piggyback->board_desc.osc_10);
+	no_os_gpio_remove(piggyback->board_desc.osc_20);
+	no_os_gpio_remove(piggyback->board_desc.osc_40);
+	no_os_gpio_remove(piggyback->board_desc.gp3);
+	no_os_gpio_remove(piggyback->board_desc.gp2);
+	no_os_gpio_remove(piggyback->board_desc.gp1);
+	no_os_uart_remove(piggyback->board_desc.serial_log);
+	return;
 }
 
 /* given a list of supported piggybacks, lets try to probe them 1 by 1
@@ -203,11 +229,6 @@ void remove_piggyback(struct ad4080_piggyback *piggyback)
 		if (piggyback->remove)
 			piggyback->remove(piggyback);
 		piggyback->flags = piggyback->flags & ~(PIGGYBACK_PROBED);
-	}
-	
-	if ((piggyback->flags & PIGGYBACK_PREINITIALIZED) == PIGGYBACK_PREINITIALIZED) {
-		no_os_uart_remove(piggyback->board_desc.serial_log);
-		piggyback->flags = piggyback->flags & ~(PIGGYBACK_PREINITIALIZED);
 	}
 	return;
 }

@@ -113,4 +113,25 @@ extern struct max_gpio_init_param max_reset_line_extra;
 
 extern struct max_gpio_init_param gpiox_extra;
 
+
+#define OSC_40M_PORT 	0
+#define OSC_40M_NUM 	2
+#define OSC_40M_PULL 	NO_OS_PULL_NONE
+#define OSC_40M_OPS 	&max_gpio_ops
+#define OSC_40M_EXTRA 	&gpiox_extra
+
+#define OSC_20M_PORT 	0
+#define OSC_20M_NUM 	1
+#define OSC_20M_PULL 	NO_OS_PULL_NONE
+#define OSC_20M_OPS 	&max_gpio_ops
+#define OSC_20M_EXTRA 	&gpiox_extra
+
+#define OSC_10M_PORT 	0
+#define OSC_10M_NUM 	0
+#define OSC_10M_PULL 	NO_OS_PULL_NONE
+#define OSC_10M_OPS 	&max_gpio_ops
+#define OSC_10M_EXTRA 	&gpiox_extra
+
+
 #endif /* __PARAMETERS_H__ */
+
