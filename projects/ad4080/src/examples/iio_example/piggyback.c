@@ -186,7 +186,7 @@ int start_piggyback(struct ad4080_piggyback *piggyback)
 		return -ENOMEM;
 	}
 	struct iio_app_device iio_app_devices[] = {
-		IIO_APP_DEVICE("NACUNA_ad4080_demo", piggyback->iio_dev->ad4080,
+		IIO_APP_DEVICE("ADALM-MMSC Demo", piggyback->iio_dev->ad4080,
 				piggyback->iio_dev->iio_dev, 
 				&piggyback->adc_data_buffer, 
 				NULL, NULL),
