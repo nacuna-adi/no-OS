@@ -123,3 +123,22 @@ struct no_os_gpio_init_param osc_10_class = {
 	.extra = OSC_10M_EXTRA,
 };
 
+struct no_os_spi_init_param data_spi_class = {
+	.device_id = DATA_SPI_DEVICE_ID,
+	.max_speed_hz = DATA_SPI_SPEED_HZ,
+	.chip_select = DATA_SPI_CHIP_SELECT,
+	.mode = DATA_SPI_MODE,
+	.bit_order = DATA_SPI_BIT_ORDER,
+	.lanes = DATA_SPI_LANES,
+	.extra = DATA_SPI_EXTRA,
+	.platform_ops = DATA_SPI_OPS, 
+};
+
+struct no_os_gpio_init_param data_spi_ss_class = {
+	.port = DATA_SPI_SS_PORT,
+	.number = DATA_SPI_SS_NUM,
+	.pull = DATA_SPI_SS_PULL,
+	.platform_ops = DATA_SPI_SS_OPS,
+	.extra = DATA_SPI_SS_EXTRA,
+};
+

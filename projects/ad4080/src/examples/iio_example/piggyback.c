@@ -78,39 +78,80 @@ static struct ad4080_init_param default_ad4080_init_param = {
  * system on your piggyback object - preferably on their init() function */
 int init_piggyback(struct ad4080_piggyback *piggyback)
 {
-	no_os_uart_init(&piggyback->board_desc.serial_log, 
-			piggyback->board_class->serial_log_class);
+	int err;
+	
+	if ((err = no_os_uart_init(&piggyback->board_desc.serial_log,
+			           piggyback->board_class->serial_log_class))) {
+		return err;
+	}
 	no_os_uart_stdio(piggyback->board_desc.serial_log);
+	piggyback->flags |= PIGGYBACK_SERIAL_LOG_INITIALIZED;
 
 	/* initialize the side band GPIOs (1 output, 2 input , 3 input) */
-	no_os_gpio_get(&piggyback->board_desc.gp1,
-			piggyback->board_class->gp1_class);
+	if ((err = no_os_gpio_get(&piggyback->board_desc.gp1, 
+		                  piggyback->board_class->gp1_class))) {
+		return err;
+	}
 	no_os_gpio_direction_output(piggyback->board_desc.gp1,
-			NO_OS_GPIO_LOW);
+				    NO_OS_GPIO_LOW);
+	piggyback->flags |= PIGGYBACK_GP1_INITIALIZED;
 	
-	no_os_gpio_get(&piggyback->board_desc.gp2,
-			piggyback->board_class->gp2_class);
+	if ((err = no_os_gpio_get(&piggyback->board_desc.gp2,
+			          piggyback->board_class->gp2_class))) {
+		return err;
+	}
 	no_os_gpio_direction_input(piggyback->board_desc.gp2);
+	piggyback->flags |= PIGGYBACK_GP2_INITIALIZED;
 	
-	no_os_gpio_get(&piggyback->board_desc.gp3,
-			piggyback->board_class->gp3_class);
+	if ((err = no_os_gpio_get(&piggyback->board_desc.gp3,
+			          piggyback->board_class->gp3_class))) {
+		return err;
+	}
 	no_os_gpio_direction_input(piggyback->board_desc.gp3);
+	piggyback->flags |= PIGGYBACK_GP3_INITIALIZED;
+
 
 	/* oscillators */
-	no_os_gpio_get(&piggyback->board_desc.osc_40,
-			piggyback->board_class->osc_40_class);
+	if ((err = no_os_gpio_get(&piggyback->board_desc.osc_40,
+			          piggyback->board_class->osc_40_class))) {
+		return err;
+	}
 	no_os_gpio_direction_output(piggyback->board_desc.osc_40,
 				    NO_OS_GPIO_LOW);
-
-	no_os_gpio_get(&piggyback->board_desc.osc_20,
-			piggyback->board_class->osc_20_class);
+	piggyback->flags |= PIGGYBACK_OSC40_INITIALIZED;
+	
+	if ((err = no_os_gpio_get(&piggyback->board_desc.osc_20,
+			         piggyback->board_class->osc_20_class))) {
+		return err;
+	}
 	no_os_gpio_direction_output(piggyback->board_desc.osc_20,
 				    NO_OS_GPIO_LOW);
+	piggyback->flags |= PIGGYBACK_OSC20_INITIALIZED;
 
-	no_os_gpio_get(&piggyback->board_desc.osc_10,
-			piggyback->board_class->osc_10_class);
+	if ((err = no_os_gpio_get(&piggyback->board_desc.osc_10,
+			     piggyback->board_class->osc_10_class))) {
+		return err;
+	}
 	no_os_gpio_direction_output(piggyback->board_desc.osc_10,
 				    NO_OS_GPIO_LOW);
+	piggyback->flags |= PIGGYBACK_OSC10_INITIALIZED;
+
+
+	/* initialize the data SPI */
+	if ((err = no_os_spi_init(&piggyback->board_desc.data_spi,
+			          piggyback->board_class->data_spi_class))) {
+		return err;
+	}
+	piggyback->flags |= PIGGYBACK_DATA_SPI_INITIALIZED;
+
+	if ((err = no_os_gpio_get(&piggyback->board_desc.data_spi_ss,
+			          piggyback->board_class->data_spi_ss_class))) {
+		return err;
+	}
+	no_os_gpio_direction_output(piggyback->board_desc.data_spi_ss,
+				    NO_OS_GPIO_HIGH);
+	piggyback->flags |= PIGGYBACK_DATA_SPI_SS_INITIALIZED;
+
 	return 0;
 }
 
@@ -118,13 +159,50 @@ int init_piggyback(struct ad4080_piggyback *piggyback)
  * system on your piggyback object - preferably on their exit() function */
 void exit_piggyback(struct ad4080_piggyback *piggyback)
 {
-	no_os_gpio_remove(piggyback->board_desc.osc_10);
-	no_os_gpio_remove(piggyback->board_desc.osc_20);
-	no_os_gpio_remove(piggyback->board_desc.osc_40);
-	no_os_gpio_remove(piggyback->board_desc.gp3);
-	no_os_gpio_remove(piggyback->board_desc.gp2);
-	no_os_gpio_remove(piggyback->board_desc.gp1);
-	no_os_uart_remove(piggyback->board_desc.serial_log);
+	if (piggyback->flags & PIGGYBACK_DATA_SPI_SS_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.data_spi_ss);
+		piggyback->flags &= ~PIGGYBACK_DATA_SPI_SS_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_DATA_SPI_INITIALIZED) {
+		no_os_spi_remove(piggyback->board_desc.data_spi);
+		piggyback->flags &= ~PIGGYBACK_DATA_SPI_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_OSC10_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.osc_10);
+		piggyback->flags &= ~PIGGYBACK_OSC10_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_OSC20_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.osc_20);
+		piggyback->flags &= ~PIGGYBACK_OSC20_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_OSC40_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.osc_40);
+		piggyback->flags &= ~PIGGYBACK_OSC40_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_GP3_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.gp3);
+		piggyback->flags &= ~PIGGYBACK_GP3_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_GP2_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.gp2);
+		piggyback->flags &= ~PIGGYBACK_GP2_INITIALIZED;
+	}
+
+	if (piggyback->flags & PIGGYBACK_GP1_INITIALIZED) {
+		no_os_gpio_remove(piggyback->board_desc.gp1);
+		piggyback->flags &= ~PIGGYBACK_GP1_INITIALIZED;
+	}
+	
+	if (piggyback->flags & PIGGYBACK_SERIAL_LOG_INITIALIZED) {
+		no_os_uart_remove(piggyback->board_desc.serial_log);
+		piggyback->flags &= ~PIGGYBACK_SERIAL_LOG_INITIALIZED;
+	}
 	return;
 }
 
@@ -163,7 +241,6 @@ int start_piggyback(struct ad4080_piggyback *piggyback)
 		if (ret) {
 			return ret;
 		}
-		piggyback->flags |= PIGGYBACK_INITIALIZED;
 	}
 
 	/* now prepare iio stuff */
@@ -215,11 +292,9 @@ void stop_piggyback(struct ad4080_piggyback *piggyback)
 		piggyback->flags &= ~(PIGGYBACK_IIO_INITIALIZED);
 	}
 
-	if ((piggyback->flags & PIGGYBACK_INITIALIZED) == PIGGYBACK_INITIALIZED) {
-		if (piggyback->exit)
-			piggyback->exit(piggyback);
-		piggyback->flags &= ~(PIGGYBACK_INITIALIZED);
-	}
+	if (piggyback && piggyback->exit)
+		piggyback->exit(piggyback);
+
 	return;
 }
 

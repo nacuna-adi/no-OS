@@ -36,10 +36,12 @@
 
 #include "parameters.h"
 
+extern struct no_os_gpio_init_param data_spi_ss_class;
+extern struct no_os_spi_init_param data_spi_class;
+
 extern struct no_os_gpio_init_param osc_40_class;
 extern struct no_os_gpio_init_param osc_20_class;
 extern struct no_os_gpio_init_param osc_10_class;
-
 
 extern struct no_os_uart_init_param serial_iio_class;
 extern struct no_os_uart_init_param serial_log_class;

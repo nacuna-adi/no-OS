@@ -43,6 +43,9 @@
  * properly
  */
 static struct controller_board_class demo_board_class = {
+	.data_spi_class = &data_spi_class,
+	.data_spi_ss_class = &data_spi_ss_class,
+
 	.osc_40_class = &osc_40_class,
 	.osc_20_class = &osc_20_class,
 	.osc_10_class = &osc_10_class,

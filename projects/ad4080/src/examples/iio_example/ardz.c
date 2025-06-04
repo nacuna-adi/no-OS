@@ -72,6 +72,9 @@ static int ardz_remove(struct ad4080_piggyback *piggyback)
 {
 	struct ardz_piggyback *ardz;
 	ardz = piggyback_container(piggyback, struct ardz_piggyback, gen_piggyback);
+	
+	/* power down the line prior to removing it */
+	no_os_gpio_set_value(ardz->reset_line, NO_OS_GPIO_LOW);
 	no_os_gpio_remove(ardz->reset_line);
 	return 0;
 }

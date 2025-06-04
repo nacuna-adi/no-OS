@@ -43,6 +43,12 @@
 #include <iio_app.h>
 
 struct controller_board_class {
+	/* data SPI communication for AD4080 is expected to have an explicit
+	 * SS sequence. to support feathers that do not have a second 
+	 * SPI with SS signal exposed.*/
+	struct no_os_spi_init_param *data_spi_class;
+	struct no_os_gpio_init_param *data_spi_ss_class;
+
 	struct no_os_gpio_init_param *osc_40_class;
 	struct no_os_gpio_init_param *osc_20_class;
 	struct no_os_gpio_init_param *osc_10_class;
@@ -56,6 +62,9 @@ struct controller_board_class {
 };
 
 struct controller_board_desc {
+	struct no_os_spi_desc *data_spi;
+	struct no_os_gpio_desc *data_spi_ss;
+
 	struct no_os_gpio_desc *osc_40;
 	struct no_os_gpio_desc *osc_20;
 	struct no_os_gpio_desc *osc_10;
@@ -72,10 +81,18 @@ struct controller_board_desc {
 struct ad4080_piggyback {
 	char *name;
 
-#define PIGGYBACK_PROBED 		(1 << 0)
-#define PIGGYBACK_INITIALIZED 		(1 << 1)
-#define PIGGYBACK_IIO_INITIALIZED 	(1 << 2)
-#define PIGGYBACK_IIO_APP_INITIALIZED 	(1 << 3)
+#define PIGGYBACK_PROBED 			(1 << 0)
+#define PIGGYBACK_SERIAL_LOG_INITIALIZED 	(1 << 1)
+#define PIGGYBACK_GP1_INITIALIZED 		(1 << 2)
+#define PIGGYBACK_GP2_INITIALIZED 		(1 << 3)
+#define PIGGYBACK_GP3_INITIALIZED 		(1 << 4)
+#define PIGGYBACK_OSC40_INITIALIZED 		(1 << 5)
+#define PIGGYBACK_OSC20_INITIALIZED 		(1 << 6)
+#define PIGGYBACK_OSC10_INITIALIZED 		(1 << 7)
+#define PIGGYBACK_DATA_SPI_INITIALIZED 		(1 << 8)
+#define PIGGYBACK_DATA_SPI_SS_INITIALIZED 	(1 << 9)
+#define PIGGYBACK_IIO_INITIALIZED 		(1 << 10)
+#define PIGGYBACK_IIO_APP_INITIALIZED 		(1 << 11)
 	uint32_t flags;
 
 	/* ad4080 communications require the following hardware definitions

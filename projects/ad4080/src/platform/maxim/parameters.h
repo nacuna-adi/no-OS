@@ -132,6 +132,21 @@ extern struct max_gpio_init_param gpiox_extra;
 #define OSC_10M_OPS 	&max_gpio_ops
 #define OSC_10M_EXTRA 	&gpiox_extra
 
+#define DATA_SPI_DEVICE_ID 	2
+#define DATA_SPI_SPEED_HZ 	1000000 /* up to 50 Mhz according to ad4080 data sheet */
+
+#define DATA_SPI_CHIP_SELECT 	0
+#define DATA_SPI_MODE 		NO_OS_SPI_MODE_3
+#define DATA_SPI_BIT_ORDER 	NO_OS_SPI_BIT_ORDER_MSB_FIRST
+#define DATA_SPI_LANES 		NO_OS_SPI_SINGLE_LANE
+#define DATA_SPI_EXTRA  	&max_spi_extra
+#define DATA_SPI_OPS 		&max_spi_ops
+
+#define DATA_SPI_SS_PORT 	0
+#define DATA_SPI_SS_NUM 	21
+#define DATA_SPI_SS_PULL 	NO_OS_PULL_UP
+#define DATA_SPI_SS_OPS 	&max_gpio_ops
+#define DATA_SPI_SS_EXTRA 	&gpiox_extra
 
 #endif /* __PARAMETERS_H__ */
 
