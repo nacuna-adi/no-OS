@@ -242,6 +242,12 @@ enum ad4080_fifo_mode {
 	AD4080_EVENT_TRIGGER,
 };
 
+/* see struct ad4080_spi_init_param below for description */
+struct ad4080_spi_desc {
+	struct no_os_gpio_desc *ss;
+	struct no_os_spi_desc *spi;
+};
+
 /**
  * @struct ad4080_dev
  * @brief ad4080 Device structure.
@@ -249,6 +255,8 @@ enum ad4080_fifo_mode {
 struct ad4080_dev {
 	/* SPI */
 	struct no_os_spi_desc	*spi_desc;
+	/* Data SPI */
+	struct ad4080_spi_desc 	data_spi;
 	/* SPI 3-Wire Connection */
 	bool spi3wire;
 	/** Address Ascension */
@@ -287,6 +295,12 @@ struct ad4080_dev {
 	enum ad4080_gpio_op_func_sel gpio_op_func_sel[NUM_AD4080_GPIO];
 };
 
+/* we package an SPI into a SPI peripheral and an _optional_ SS signal. */
+struct ad4080_spi_init_param {
+	struct no_os_gpio_init_param *ss_init;
+	struct no_os_spi_init_param *spi_init;
+};
+
 /**
  * @struct ad4080_init_param
  * @brief ad4080 Device initialization parameters.
@@ -294,6 +308,8 @@ struct ad4080_dev {
 struct ad4080_init_param {
 	/* SPI */
 	struct no_os_spi_init_param	*spi_init;
+	/* Data SPI */
+	struct ad4080_spi_init_param 	data_spi;
 	/* SPI 3-Wire Connection */
 	bool spi3wire;
 	/** Address Ascension */
@@ -497,6 +513,11 @@ int ad4080_configuration_intf_init(struct ad4080_dev *device,
 /** Configure the data interface during initialization */
 int ad4080_data_intf_init(struct ad4080_dev *device,
 			  struct ad4080_init_param init_param);
+
+/** Read the Data SPI */
+int ad4080_read_data(struct ad4080_dev *dev,
+		     uint8_t *buf,
+		     size_t count);
 
 /** Initialize the device. */
 int ad4080_init(struct ad4080_dev **device,

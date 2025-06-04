@@ -1125,6 +1125,41 @@ int ad4080_data_intf_init(struct ad4080_dev *dev,
 }
 
 /**
+ * @brief Read from the Data SPI
+ * @param dev - The device structure.
+ * @param buf - The buffer for the received data
+ * @param count - Length of the buffer
+ * @return 0 in case of success, negative error code otherwise
+ */
+int ad4080_read_data(struct ad4080_dev *dev,
+		     uint8_t *buf,
+		     size_t count)
+{
+	int err;
+
+	if (!dev)
+		return -EINVAL;
+
+	if (!buf)
+		return -EINVAL;
+
+	if (count < 1)
+		return -EINVAL;
+
+	/* Select the slave - if we can */
+	if (dev->data_spi.ss)
+		no_os_gpio_set_value(dev->data_spi.ss, NO_OS_GPIO_LOW);
+	
+	err = no_os_spi_write_and_read(dev->data_spi.spi, buf, count);
+
+	/* Deselect the slave - if we have manually selected it */
+	if (dev->data_spi.ss)
+		no_os_gpio_set_value(dev->data_spi.ss, NO_OS_GPIO_HIGH);
+
+	return err;
+}
+
+/**
  * @brief Initialize the device.
  * @param device - The device structure.
  * @param init_param - The structure that contains the device initial
@@ -1201,10 +1236,25 @@ int ad4080_init(struct ad4080_dev **device,
 	if (ret)
 		goto error_spi;
 
+
+	/* Data SPI initialization */
+	ret = no_os_spi_init(&dev->data_spi.spi, init_param.data_spi.spi_init);
+	if (ret)
+		goto error_spi;
+
+	dev->data_spi.ss = NULL;
+	if (init_param.data_spi.ss_init) {
+		ret = no_os_gpio_get(&dev->data_spi.ss, init_param.data_spi.ss_init);
+		if (ret)
+			goto error_data_spi;
+	}
+
 	*device = dev;
 
 	return 0;
 
+error_data_spi:
+	no_os_spi_remove(dev->data_spi.spi);
 error_spi:
 	no_os_spi_remove(dev->spi_desc);
 error_dev:
@@ -1225,6 +1275,16 @@ int ad4080_remove(struct ad4080_dev *dev)
 	if (!dev)
 		return -EINVAL;
 
+	if (dev->data_spi.ss) {
+		if ((ret = no_os_gpio_remove(dev->data_spi.ss)) != 0) {
+			return ret;
+		}
+	}
+
+	if ((ret = no_os_spi_remove(dev->data_spi.spi)) != 0) {
+		return ret;
+	}
+	 
 	ret = no_os_spi_remove(dev->spi_desc);
 	if (ret)
 		return ret;
