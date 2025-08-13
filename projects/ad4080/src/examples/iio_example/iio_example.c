@@ -162,7 +162,7 @@ int iio_example_main(void)
 	ad4080_iio_device(iio_ad4080, &single_ad4080_iio_device);
 
 	struct iio_app_device single_ad4080_iio_app_device =
-		IIO_APP_DEVICE("ADALM-MMSC", 
+		IIO_APP_DEVICE("AD4080", 
 				ad4080,
 				&single_ad4080_iio_device,
 				&read_data_buffer,
