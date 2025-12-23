@@ -2,6 +2,7 @@
  *   @file   ad5593r.c
  *   @brief  Implementation of AD5593R driver.
  *   @author Mircea Caprioru (mircea.caprioru@analog.com)
+ *   @author Niel Acuna (niel.acuna@analog.com)
 ********************************************************************************
  * Copyright 2018, 2020, 2025(c) Analog Devices, Inc.
  *
@@ -19,7 +20,7 @@
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES, INC. “AS IS” AND ANY EXPRESS OR
+ * THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES, INC. "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
  * EVENT SHALL ANALOG DEVICES, INC. BE LIABLE FOR ANY DIRECT, INDIRECT,
@@ -316,4 +317,34 @@ int32_t ad5593r_init(struct ad5592r_dev **device,
 	*device = dev;
 
 	return ret;
+}
+
+/**
+ * Teardown an AD5593r device.
+ *
+ * @param device - The device structure.
+ * @return 0 in case of success, negative error code otherwise
+ */
+int32_t ad5593r_remove(struct ad5592r_dev *dev)
+{
+	int err;
+
+	if (!dev)
+		return -EINVAL;
+
+	/* before anything else, reset the chip to bring
+	 * it to a known state */
+	err = ad5592r_software_reset(dev);
+	if (err)
+		return err;
+
+	/* disable the SPI master */
+	err = no_os_spi_remove(dev->spi);
+	if (err)
+		return err;
+
+	/* finally we can remove our descriptor object */
+	no_os_free(dev);
+
+	return 0;
 }

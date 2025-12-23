@@ -2,6 +2,7 @@
  *   @file   ad5592r-base.c
  *   @brief  Implementation of AD5592R Base Driver.
  *   @author Mircea Caprioru (mircea.caprioru@analog.com)
+ *   @author Niel Acuna (niel.acuna@analog.com)
 ********************************************************************************
  * Copyright 2018, 2020, 2025(c) Analog Devices, Inc.
  *
@@ -488,6 +489,35 @@ int32_t ad5592r_set_adc_buffer(struct ad5592r_dev *dev, bool enable)
 		return ret;
 
 	dev->adc_buf = enable;
+
+	return 0;
+}
+
+/* Set repetition bit in ADC sequencer.
+ *
+ * @param dev - The device.
+ * @param repeat[in] - status of repeat bit to set.
+ * @return 0 if successful. Negative value if error is encountered.
+ */
+int32_t ad5592r_set_repetition(struct ad5592r_dev *dev, bool repeat)
+{
+	int err;
+	uint16_t val;
+
+	if (!dev)
+		return -EINVAL;
+
+	err = ad5592r_base_reg_read(dev, AD5592R_REG_ADC_SEQ, &val);
+	if (err)
+		return err;
+
+	val &= ~AD5592R_REG_ADC_SEQ_REP;
+	if (repeat)
+		val |= AD5592R_REG_ADC_SEQ_REP;
+
+	err = ad5592r_base_reg_write(dev, AD5592R_REG_ADC_SEQ, val);
+	if (err)
+		return err;
 
 	return 0;
 }
